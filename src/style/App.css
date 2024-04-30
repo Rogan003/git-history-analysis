@@ -1,5 +1,6 @@
 .App {
   text-align: center;
+  padding: 5% 30% 10% 30%;
 }
 
 .App-logo {
@@ -35,4 +36,20 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.linkInputDiv {
+  padding: 1%;
+  margin: 1%;
+}
+.linkInput {
+  border-radius: 10px;
+  background-color: #E1E1E1;
+  box-shadow: -1px 1px 1px rgba(23, 23, 23, 0.2);
+  padding: 2%;
+  margin: 2%;
+  width: 50%;
+  text-align: center;
+  vertical-align: center;
+  font-size: 100%;
 }
