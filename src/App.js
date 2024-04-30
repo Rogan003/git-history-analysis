@@ -9,7 +9,7 @@ function App() {
   return (
     <div className = "App">
         <LinkInput inputText={inputText} setInputText={setInputText} />
-        <Results />
+        <Results linkToRepository = {inputText} />
     </div>
   );
 }
