@@ -9,7 +9,7 @@ const Results = (props) => {
     const octokit = new Octokit();
 
     const parseGitHubUrl = (url) => {
-        // example: https://github.com/Rogan003/TravelTheWorld (doesn't work with big R
+        // example: https://github.com/Rogan003/TravelTheWorld
         const regex = /github\.com\/([^\/]+)\/([^\/]+)/;
         const match = url.match(regex);
         if (match) {
@@ -22,9 +22,9 @@ const Results = (props) => {
     const getRepository = () => {
         const { owner, repo } = parseGitHubUrl(props.linkToRepository);
 
-        if (owner === null) return null;
+        if (owner === null) return Promise.resolve(null);
 
-        octokit.request('GET /repos/{owner}/{repo}', {
+        return octokit.request('GET /repos/{owner}/{repo}', {
             owner: owner,
             repo: repo
         }).then(response => {
@@ -41,29 +41,24 @@ const Results = (props) => {
     }
 
     const findTopContributingPairs = () => {
-        const repository = getRepository();
+        getRepository().then((repository) => {
+            if(!repository && props.linkToRepository !== "")
+            {
+                setContributorPairs([]);
+                setErrorMessage("Repository not found!");
+                return;
+            }
 
-        if(repository === null)
-        {
-            setContributorPairs([]);
-            setErrorMessage("Repository not found!");
-            return;
-        }
+            setErrorMessage("");
 
-        setErrorMessage("");
-        // other possible errors:
-        // No commits found at the repository + props.linkToRepository!
-        // Less than two developers contributed to the repository!
+            // other possible errors:
+            // No commits found at the repository + props.linkToRepository!
+            // Less than two developers contributed to the repository!
+        });
     }
 
     useEffect(() => {
         findTopContributingPairs();
-
-        if(props.linkToRepository === "")
-        {
-            setErrorMessage("");
-        }
-
     }, [props.linkToRepository]);
 
     return (
