@@ -10,6 +10,7 @@ const Results = (props) => {
 
     const parseGitHubUrl = (url) => {
         // example: https://github.com/Rogan003/TravelTheWorld
+        // https://github.com/Rogan003/NASPprojekat
         const regex = /github\.com\/([^\/]+)\/([^\/]+)/;
         const match = url.match(regex);
         if (match) {
@@ -19,42 +20,51 @@ const Results = (props) => {
         }
     }
 
-    const getRepository = () => {
+   const getRepositoryInformation = async (info) => {
         const { owner, repo } = parseGitHubUrl(props.linkToRepository);
 
         if (owner === null) return Promise.resolve(null);
 
-        return octokit.request('GET /repos/{owner}/{repo}', {
+        return octokit.request('GET /repos/{owner}/{repo}/{info}', {
             owner: owner,
-            repo: repo
+            repo: repo,
+            info: info
         }).then(response => {
-            // Log the repository information
-            console.log("Repository Information:");
-            console.log("Name:", response.data.name);
-            console.log("Description:", response.data.description);
-            console.log("URL:", response.data.html_url);
-            return response.data;
+            return response;
         }).catch(error => {
             console.error("Error loading repository:", error);
             return null;
         });
     }
 
-    const findTopContributingPairs = () => {
-        getRepository().then((repository) => {
-            if(!repository && props.linkToRepository !== "")
-            {
-                setContributorPairs([]);
-                setErrorMessage("Repository not found!");
-                return;
-            }
+    const findTopContributingPairs = async () => {
+        const commits = await getRepositoryInformation("commits");
+        const contributors = await getRepositoryInformation("contributors");
 
-            setErrorMessage("");
+        if(!commits && props.linkToRepository !== "")
+        {
+            setContributorPairs([]);
+            setErrorMessage("Repository not found!");
+            return;
+        }
 
-            // other possible errors:
-            // No commits found at the repository + props.linkToRepository!
-            // Less than two developers contributed to the repository!
-        });
+        if(props.linkToRepository !== "" && commits.data.length === 0)
+        {
+            setContributorPairs([]);
+            setErrorMessage("Repository has no commits!");
+            return;
+        }
+
+        if(props.linkToRepository !== "" && contributors.data.length < 2)
+        {
+            setContributorPairs([]);
+            setErrorMessage("Repository has less than two contributors!");
+            return;
+        }
+
+        setErrorMessage("");
+
+        // algorithm
     }
 
     useEffect(() => {
