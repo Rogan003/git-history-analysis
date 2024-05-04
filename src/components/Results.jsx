@@ -54,19 +54,20 @@ const Results = (props) => {
         });
     };
 
-    const getContributorsAndFiles = async (commits) => {
-        let contributorsAndFiles = {};
+    const getFilesAndContributors = async (commits) => {
+        let filesAndContributors = {};
 
         for (const commit of commits.data) {
             const commitFiles = await getCommitFiles(commit.sha);
 
             commitFiles.forEach((filename) => {
-                contributorsAndFiles[commit.author.id] = contributorsAndFiles[commit.author.id] || {};
-                contributorsAndFiles[commit.author.id][filename] = contributorsAndFiles[commit.author.id][filename] ? contributorsAndFiles[commit.author.id][filename] + 1 : 1;
+                filesAndContributors[filename] = filesAndContributors[filename] || {};
+                filesAndContributors[filename][commit.author.id] =
+                    filesAndContributors[filename][commit.author.id] ? filesAndContributors[filename][commit.author.id] + 1 : 1;
             });
         }
 
-        return contributorsAndFiles;
+        return filesAndContributors;
     };
 
     const findTopContributingPairs = async () => {
@@ -103,8 +104,37 @@ const Results = (props) => {
         setErrorMessage("");
 
         // algorithm
-        let contributorsAndFiles= await getContributorsAndFiles(commits);
+        let filesAndContributors= await getFilesAndContributors(commits);
 
+        let topContributingPairs = {};
+
+        for(const fileWithContributors of filesAndContributors) {
+            for (let i = 0; i < fileWithContributors.length; i++) {
+                for(let j = i; j < fileWithContributors.length; j++) {
+                    const contributorOne = fileWithContributors.Keys()[i];
+                    const contributorTwo = fileWithContributors.Keys()[j];
+
+                    const contributorsKey = contributorOne + ',' + contributorTwo;
+
+                    topContributingPairs[contributorsKey] = topContributingPairs[contributorsKey] || {};
+
+                    const commonFileContributions =
+                        Math.min(filesAndContributors[contributorOne], filesAndContributors[contributorTwo]);
+
+                    topContributingPairs[contributorsKey][fileWithContributors] =
+                        topContributingPairs[contributorsKey][fileWithContributors] ?
+                            topContributingPairs[contributorsKey][fileWithContributors]
+                            + commonFileContributions : commonFileContributions;
+
+                    topContributingPairs[contributorsKey]["contributionsToTheSameFilesAndRepositories"] =
+                        topContributingPairs[contributorsKey]["contributionsToTheSameFilesAndRepositories"] ?
+                            topContributingPairs[contributorsKey]["contributionsToTheSameFilesAndRepositories"]
+                            + commonFileContributions: commonFileContributions;
+                }
+            }
+        }
+
+        setContributorPairs(topContributingPairs);
     }
 
     useEffect(() => {
