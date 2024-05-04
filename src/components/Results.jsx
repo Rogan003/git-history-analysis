@@ -37,25 +37,63 @@ const Results = (props) => {
         });
     }
 
+    const getCommitFiles = async (commitSha) => {
+        const { owner, repo } = parseGitHubUrl(props.linkToRepository);
+
+        return octokit.request('GET /repos/{owner}/{repo}/commits/{ref}', {
+            owner: owner,
+            repo: repo,
+            ref: commitSha
+        }).then(response => {
+            // Extract the list of files changed
+            const filesChanged = response.data.files.map(file => file.filename);
+            return filesChanged;
+        }).catch(error => {
+            console.error("Error fetching commit details:", error);
+            return [];
+        });
+    };
+
+    const getContributorsAndFiles = async (commits) => {
+        let contributorsAndFiles = {};
+
+        for (const commit of commits.data) {
+            const commitFiles = await getCommitFiles(commit.sha);
+
+            commitFiles.forEach((filename) => {
+                contributorsAndFiles[commit.author.id] = contributorsAndFiles[commit.author.id] || {};
+                contributorsAndFiles[commit.author.id][filename] = contributorsAndFiles[commit.author.id][filename] ? contributorsAndFiles[commit.author.id][filename] + 1 : 1;
+            });
+        }
+
+        return contributorsAndFiles;
+    };
+
     const findTopContributingPairs = async () => {
         const commits = await getRepositoryInformation("commits");
         const contributors = await getRepositoryInformation("contributors");
 
-        if(!commits && props.linkToRepository !== "")
+        if(props.linkToRepository === "")
+        {
+            setErrorMessage("");
+            return;
+        }
+
+        if(!commits)
         {
             setContributorPairs([]);
             setErrorMessage("Repository not found!");
             return;
         }
 
-        if(props.linkToRepository !== "" && commits.data.length === 0)
+        if(commits.data.length === 0)
         {
             setContributorPairs([]);
             setErrorMessage("Repository has no commits!");
             return;
         }
 
-        if(props.linkToRepository !== "" && contributors.data.length < 2)
+        if(contributors.data.length < 2)
         {
             setContributorPairs([]);
             setErrorMessage("Repository has less than two contributors!");
@@ -65,6 +103,8 @@ const Results = (props) => {
         setErrorMessage("");
 
         // algorithm
+        let contributorsAndFiles= await getContributorsAndFiles(commits);
+
     }
 
     useEffect(() => {
