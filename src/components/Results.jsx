@@ -76,8 +76,8 @@ const Results = (props) => {
         for(const fileWithContributors of filesAndContributors) {
             for (let i = 0; i < fileWithContributors.length; i++) {
                 for(let j = i; j < fileWithContributors.length; j++) {
-                    const contributorOne = fileWithContributors.Keys()[i];
-                    const contributorTwo = fileWithContributors.Keys()[j];
+                    const contributorOne = Object.keys(fileWithContributors)[i];
+                    const contributorTwo = Object.keys(fileWithContributors)[j];
 
                     const contributorsKey = contributorOne + ',' + contributorTwo;
 
@@ -138,7 +138,7 @@ const Results = (props) => {
         // algorithm
         let filesAndContributors= await getFilesAndContributors(commits);
 
-        let topContributingPairs = calculateTopContributingPairs(filesAndContributors);
+        let topContributingPairs = await calculateTopContributingPairs(filesAndContributors);
 
         setContributorPairs(topContributingPairs);
     }
