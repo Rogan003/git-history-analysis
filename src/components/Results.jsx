@@ -62,8 +62,8 @@ const Results = (props) => {
 
             commitFiles.forEach((filename) => {
                 filesAndContributors[filename] = filesAndContributors[filename] || {};
-                filesAndContributors[filename][commit.author.id] =
-                    filesAndContributors[filename][commit.author.id] ? filesAndContributors[filename][commit.author.id] + 1 : 1;
+                filesAndContributors[filename][commit.author.name] =
+                    filesAndContributors[filename][commit.author.name] ? filesAndContributors[filename][commit.author.name] + 1 : 1;
             });
         }
 
@@ -81,9 +81,14 @@ const Results = (props) => {
                     const contributorOne = Object.keys(fileWithContributors)[i];
                     const contributorTwo = Object.keys(fileWithContributors)[j];
 
-                    const contributorsKey = contributorOne + ',' + contributorTwo;
+                    const contributorsKey = contributorOne + ';' + contributorTwo;
 
-                    contributingPairs[contributorsKey] = contributingPairs[contributorsKey] || {};
+                    if (!contributingPairs.hasOwnProperty(contributorsKey))
+                    {
+                        contributingPairs[contributorsKey] = {};
+                        contributingPairs[contributorsKey]["developer1"] = contributorOne;
+                        contributingPairs[contributorsKey]["developer2"] = contributorTwo;
+                    }
 
                     const commonFileContributions =
                         Math.min(filesAndContributors[contributorOne], filesAndContributors[contributorTwo]);
@@ -103,24 +108,6 @@ const Results = (props) => {
 
         return contributingPairs;
     }
-
-    const sortObjectByNumericField = (obj, field) => {
-        // Convert the object to an array of key-value pairs
-        const entries = Object.entries(obj);
-
-        // Sort the array based on the numeric field
-        entries.sort((a, b) => {
-            return a[1][field] - b[1][field];
-        });
-
-        // Convert the sorted array back to an object
-        const sortedObject = {};
-        entries.forEach(([key, value]) => {
-            sortedObject[key] = value;
-        });
-
-        return sortedObject;
-    };
 
     const findTopContributingPairs = async () => {
         const commits = await getRepositoryInformation("commits");
@@ -160,7 +147,8 @@ const Results = (props) => {
 
         const contributingPairs = await calculateContributingPairs(filesAndContributors);
 
-        const topContributingPairs = sortObjectByNumericField(contributingPairs, "contributionsToTheSameFilesAndRepositories")
+        const topContributingPairs = Object.values(contributingPairs).sort((pairOne, pairTwo) =>
+                pairTwo["contributionsToTheSameFilesAndRepositories"] - pairOne["contributionsToTheSameFilesAndRepositories"]);
 
         console.log(topContributingPairs);
         setContributorPairs(topContributingPairs);
