@@ -70,10 +70,12 @@ const Results = (props) => {
         return filesAndContributors;
     };
 
-    const calculateTopContributingPairs = async (filesAndContributors) => {
-        let topContributingPairs = {};
+    const calculateContributingPairs = async (filesAndContributors) => {
+        let contributingPairs = {};
 
-        for(const fileWithContributors of filesAndContributors) {
+        for(const fileWithContributorsKey of Object.keys(filesAndContributors)) {
+            const fileWithContributors = filesAndContributors[fileWithContributorsKey];
+
             for (let i = 0; i < fileWithContributors.length; i++) {
                 for(let j = i; j < fileWithContributors.length; j++) {
                     const contributorOne = Object.keys(fileWithContributors)[i];
@@ -81,26 +83,44 @@ const Results = (props) => {
 
                     const contributorsKey = contributorOne + ',' + contributorTwo;
 
-                    topContributingPairs[contributorsKey] = topContributingPairs[contributorsKey] || {};
+                    contributingPairs[contributorsKey] = contributingPairs[contributorsKey] || {};
 
                     const commonFileContributions =
                         Math.min(filesAndContributors[contributorOne], filesAndContributors[contributorTwo]);
 
-                    topContributingPairs[contributorsKey][fileWithContributors] =
-                        topContributingPairs[contributorsKey][fileWithContributors] ?
-                            topContributingPairs[contributorsKey][fileWithContributors]
+                    contributingPairs[contributorsKey][fileWithContributors] =
+                        contributingPairs[contributorsKey][fileWithContributors] ?
+                            contributingPairs[contributorsKey][fileWithContributors]
                             + commonFileContributions : commonFileContributions;
 
-                    topContributingPairs[contributorsKey]["contributionsToTheSameFilesAndRepositories"] =
-                        topContributingPairs[contributorsKey]["contributionsToTheSameFilesAndRepositories"] ?
-                            topContributingPairs[contributorsKey]["contributionsToTheSameFilesAndRepositories"]
+                    contributingPairs[contributorsKey]["contributionsToTheSameFilesAndRepositories"] =
+                        contributingPairs[contributorsKey]["contributionsToTheSameFilesAndRepositories"] ?
+                            contributingPairs[contributorsKey]["contributionsToTheSameFilesAndRepositories"]
                             + commonFileContributions: commonFileContributions;
                 }
             }
         }
 
-        return topContributingPairs;
+        return contributingPairs;
     }
+
+    const sortObjectByNumericField = (obj, field) => {
+        // Convert the object to an array of key-value pairs
+        const entries = Object.entries(obj);
+
+        // Sort the array based on the numeric field
+        entries.sort((a, b) => {
+            return a[1][field] - b[1][field];
+        });
+
+        // Convert the sorted array back to an object
+        const sortedObject = {};
+        entries.forEach(([key, value]) => {
+            sortedObject[key] = value;
+        });
+
+        return sortedObject;
+    };
 
     const findTopContributingPairs = async () => {
         const commits = await getRepositoryInformation("commits");
@@ -136,10 +156,13 @@ const Results = (props) => {
         setErrorMessage("");
 
         // algorithm
-        let filesAndContributors= await getFilesAndContributors(commits);
+        const filesAndContributors= await getFilesAndContributors(commits);
 
-        let topContributingPairs = await calculateTopContributingPairs(filesAndContributors);
+        const contributingPairs = await calculateContributingPairs(filesAndContributors);
 
+        const topContributingPairs = sortObjectByNumericField(contributingPairs, "contributionsToTheSameFilesAndRepositories")
+
+        console.log(topContributingPairs);
         setContributorPairs(topContributingPairs);
     }
 
