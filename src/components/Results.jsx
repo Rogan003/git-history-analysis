@@ -70,6 +70,38 @@ const Results = (props) => {
         return filesAndContributors;
     };
 
+    const calculateTopContributingPairs = async (filesAndContributors) => {
+        let topContributingPairs = {};
+
+        for(const fileWithContributors of filesAndContributors) {
+            for (let i = 0; i < fileWithContributors.length; i++) {
+                for(let j = i; j < fileWithContributors.length; j++) {
+                    const contributorOne = fileWithContributors.Keys()[i];
+                    const contributorTwo = fileWithContributors.Keys()[j];
+
+                    const contributorsKey = contributorOne + ',' + contributorTwo;
+
+                    topContributingPairs[contributorsKey] = topContributingPairs[contributorsKey] || {};
+
+                    const commonFileContributions =
+                        Math.min(filesAndContributors[contributorOne], filesAndContributors[contributorTwo]);
+
+                    topContributingPairs[contributorsKey][fileWithContributors] =
+                        topContributingPairs[contributorsKey][fileWithContributors] ?
+                            topContributingPairs[contributorsKey][fileWithContributors]
+                            + commonFileContributions : commonFileContributions;
+
+                    topContributingPairs[contributorsKey]["contributionsToTheSameFilesAndRepositories"] =
+                        topContributingPairs[contributorsKey]["contributionsToTheSameFilesAndRepositories"] ?
+                            topContributingPairs[contributorsKey]["contributionsToTheSameFilesAndRepositories"]
+                            + commonFileContributions: commonFileContributions;
+                }
+            }
+        }
+
+        return topContributingPairs;
+    }
+
     const findTopContributingPairs = async () => {
         const commits = await getRepositoryInformation("commits");
         const contributors = await getRepositoryInformation("contributors");
@@ -106,33 +138,7 @@ const Results = (props) => {
         // algorithm
         let filesAndContributors= await getFilesAndContributors(commits);
 
-        let topContributingPairs = {};
-
-        for(const fileWithContributors of filesAndContributors) {
-            for (let i = 0; i < fileWithContributors.length; i++) {
-                for(let j = i; j < fileWithContributors.length; j++) {
-                    const contributorOne = fileWithContributors.Keys()[i];
-                    const contributorTwo = fileWithContributors.Keys()[j];
-
-                    const contributorsKey = contributorOne + ',' + contributorTwo;
-
-                    topContributingPairs[contributorsKey] = topContributingPairs[contributorsKey] || {};
-
-                    const commonFileContributions =
-                        Math.min(filesAndContributors[contributorOne], filesAndContributors[contributorTwo]);
-
-                    topContributingPairs[contributorsKey][fileWithContributors] =
-                        topContributingPairs[contributorsKey][fileWithContributors] ?
-                            topContributingPairs[contributorsKey][fileWithContributors]
-                            + commonFileContributions : commonFileContributions;
-
-                    topContributingPairs[contributorsKey]["contributionsToTheSameFilesAndRepositories"] =
-                        topContributingPairs[contributorsKey]["contributionsToTheSameFilesAndRepositories"] ?
-                            topContributingPairs[contributorsKey]["contributionsToTheSameFilesAndRepositories"]
-                            + commonFileContributions: commonFileContributions;
-                }
-            }
-        }
+        let topContributingPairs = calculateTopContributingPairs(filesAndContributors);
 
         setContributorPairs(topContributingPairs);
     }
