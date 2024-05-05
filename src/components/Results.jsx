@@ -105,9 +105,9 @@ const Results = (props) => {
                         Math.min(filesAndContributors[fileWithContributorsKey][contributorOne],
                             filesAndContributors[fileWithContributorsKey][contributorTwo]);
 
-                    contributingPairs[contributorsKey][fileContributors] =
-                        contributingPairs[contributorsKey][fileContributors] ?
-                            contributingPairs[contributorsKey][fileContributors]
+                    contributingPairs[contributorsKey][fileWithContributorsKey] =
+                        contributingPairs[contributorsKey][fileWithContributorsKey] ?
+                            contributingPairs[contributorsKey][fileWithContributorsKey]
                             + commonFileContributions : commonFileContributions;
 
                     contributingPairs[contributorsKey]["contributionsToTheSameFilesAndRepositories"] =
@@ -170,6 +170,7 @@ const Results = (props) => {
     }
 
     useEffect(() => {
+        setContributorPairs([]);
         findTopContributingPairs();
     }, [props.linkToRepository]);
 

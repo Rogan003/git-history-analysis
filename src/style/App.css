@@ -34,6 +34,7 @@
   margin: 3%;
   padding: 1%;
   box-shadow: -1px 2px 2px rgba(23, 23, 23, 0.2);
+  cursor: pointer;
 }
 
 .errorMsg {
@@ -46,4 +47,11 @@
 .cardText {
   font-size: 130%;
   padding: 2%;
+}
+
+.fileContributions {
+  font-size: 80%;
+  display: flex;
+  flex-direction: column;
+  padding-top: 5%;
 }
