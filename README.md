@@ -1,3 +1,18 @@
+# Git History Analysis
+This is a project made with React that analyzes git repositories
+and outputs top contributing pairs.
+
+You can start the project with npm start and on the homepage you will
+see textbox where you should input the link to the github repository
+that will be analyzed. The program will then do its magic and present you
+cards with top contributing pairs. If you click on any card, you
+will see more details about their common contributions 
+(amount of common contributions for every common file).
+
+That is all, I hope this app suits you well.
+
+The rest of this readme is just default react readme.
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
