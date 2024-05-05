@@ -98,15 +98,19 @@ const Results = (props) => {
     const getFilesAndContributors = async (commits) => {
         let filesAndContributors = {};
 
-        for (const commit of commits) {
+        const filesPromises = commits.map(async (commit) => {
             const commitFiles = await getCommitFiles(commit.sha);
 
+            // Update filesAndContributors object
             commitFiles.forEach((filename) => {
                 filesAndContributors[filename] = filesAndContributors[filename] || {};
                 filesAndContributors[filename][commit.author.login] =
                     filesAndContributors[filename][commit.author.login] ? filesAndContributors[filename][commit.author.login] + 1 : 1;
             });
-        }
+        });
+
+        // Wait for all promises to resolve
+        await Promise.all(filesPromises);
 
         return filesAndContributors;
     };
