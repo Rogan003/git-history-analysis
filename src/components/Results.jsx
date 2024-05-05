@@ -6,7 +6,9 @@ const Results = (props) => {
     const [contributorPairs, setContributorPairs] = useState([]);
     const [errorMessage, setErrorMessage] = useState('');
 
-    const octokit = new Octokit();
+    const octokit = new Octokit({
+        auth : "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"
+    });
 
     const parseGitHubUrl = (url) => {
         // example: https://github.com/Rogan003/TravelTheWorld
@@ -75,12 +77,14 @@ const Results = (props) => {
         let contributingPairs = {};
 
         for(const fileWithContributorsKey of Object.keys(filesAndContributors)) {
-            const fileWithContributors = filesAndContributors[fileWithContributorsKey];
+            const fileContributors = filesAndContributors[fileWithContributorsKey];
 
-            for (let i = 0; i < fileWithContributors.length; i++) {
-                for(let j = i; j < fileWithContributors.length; j++) {
-                    const contributorOne = Object.keys(fileWithContributors)[i];
-                    const contributorTwo = Object.keys(fileWithContributors)[j];
+            const fileContributorsKeys = Object.keys(fileContributors);
+
+            for (let i = 0; i < fileContributorsKeys.length; i++) {
+                for(let j = i + 1; j < fileContributorsKeys.length; j++) {
+                    const contributorOne = fileContributorsKeys[i];
+                    const contributorTwo = fileContributorsKeys[j];
 
                     const contributorsKey = contributorOne + ';' + contributorTwo;
 
@@ -92,11 +96,12 @@ const Results = (props) => {
                     }
 
                     const commonFileContributions =
-                        Math.min(filesAndContributors[contributorOne], filesAndContributors[contributorTwo]);
+                        Math.min(filesAndContributors[fileWithContributorsKey][contributorOne],
+                            filesAndContributors[fileWithContributorsKey][contributorTwo]);
 
-                    contributingPairs[contributorsKey][fileWithContributors] =
-                        contributingPairs[contributorsKey][fileWithContributors] ?
-                            contributingPairs[contributorsKey][fileWithContributors]
+                    contributingPairs[contributorsKey][fileContributors] =
+                        contributingPairs[contributorsKey][fileContributors] ?
+                            contributingPairs[contributorsKey][fileContributors]
                             + commonFileContributions : commonFileContributions;
 
                     contributingPairs[contributorsKey]["contributionsToTheSameFilesAndRepositories"] =
