@@ -2,6 +2,8 @@
 This is a project made with React that analyzes git repositories
 and outputs top contributing pairs.
 
+Before starting, you should run npm install, to install the necessery libraries.
+
 You can start the project with npm start and on the homepage you will
 see textbox where you should input the link to the github repository
 that will be analyzed. The program will then do its magic and present you
