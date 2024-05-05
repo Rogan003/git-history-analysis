@@ -11,6 +11,7 @@ const Results = (props) => {
     const parseGitHubUrl = (url) => {
         // example: https://github.com/Rogan003/TravelTheWorld
         // https://github.com/Rogan003/NASPprojekat
+        // https://github.com/Rogan003/Auto-skola
         const regex = /github\.com\/([^\/]+)\/([^\/]+)/;
         const match = url.match(regex);
         if (match) {
@@ -62,8 +63,8 @@ const Results = (props) => {
 
             commitFiles.forEach((filename) => {
                 filesAndContributors[filename] = filesAndContributors[filename] || {};
-                filesAndContributors[filename][commit.author.name] =
-                    filesAndContributors[filename][commit.author.name] ? filesAndContributors[filename][commit.author.name] + 1 : 1;
+                filesAndContributors[filename][commit.author.login] =
+                    filesAndContributors[filename][commit.author.login] ? filesAndContributors[filename][commit.author.login] + 1 : 1;
             });
         }
 
@@ -144,8 +145,11 @@ const Results = (props) => {
 
         // algorithm
         const filesAndContributors= await getFilesAndContributors(commits);
+        console.log(filesAndContributors);
 
         const contributingPairs = await calculateContributingPairs(filesAndContributors);
+
+        console.log(contributingPairs);
 
         const topContributingPairs = Object.values(contributingPairs).sort((pairOne, pairTwo) =>
                 pairTwo["contributionsToTheSameFilesAndRepositories"] - pairOne["contributionsToTheSameFilesAndRepositories"]);
