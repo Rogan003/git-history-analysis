@@ -4,7 +4,7 @@ import { Octokit } from "octokit";
 
 const Results = (props) => {
     const [contributorPairs, setContributorPairs] = useState([]);
-    const [errorMessage, setErrorMessage] = useState('');
+    const [pageMessage, setPageMessage] = useState('');
 
     const octokit = new Octokit({
         auth : "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"
@@ -125,33 +125,32 @@ const Results = (props) => {
 
     const findTopContributingPairs = async () => {
         const commits = await getRepositoryInformation("commits");
-        console.log(commits.data);
         const contributors = await getRepositoryInformation("contributors");
 
         if(props.linkToRepository === "")
         {
-            setErrorMessage("");
+            setPageMessage("");
             return;
         }
 
         if(!commits)
         {
             setContributorPairs([]);
-            setErrorMessage("Repository not found!");
+            setPageMessage("Repository not found!");
             return;
         }
 
         if(commits.data.length === 0)
         {
             setContributorPairs([]);
-            setErrorMessage("Repository has no commits!");
+            setPageMessage("Repository has no commits!");
             return;
         }
 
         if(contributors.data.length < 2)
         {
             setContributorPairs([]);
-            setErrorMessage("Repository has less than two contributors!");
+            setPageMessage("Repository has less than two contributors!");
             return;
         }
 
@@ -164,13 +163,13 @@ const Results = (props) => {
         const topContributingPairs = Object.values(contributingPairs).sort((pairOne, pairTwo) =>
                 pairTwo["contributionsToTheSameFilesAndRepositories"] - pairOne["contributionsToTheSameFilesAndRepositories"]);
 
-        setErrorMessage("");
+        setPageMessage("");
         setContributorPairs(topContributingPairs);
     }
 
     useEffect(() => {
         setContributorPairs([]);
-        setErrorMessage("Loading...");
+        setPageMessage("Loading...");
         findTopContributingPairs();
     }, [props.linkToRepository]);
 
@@ -178,8 +177,8 @@ const Results = (props) => {
         <div className = "resultsContainer">
             {
                 contributorPairs.length === 0 ?
-                    <span className = "errorMsg">
-                        {errorMessage}
+                    <span className = {pageMessage === "Loading..." ? "pageMsg" : "errMsg"}>
+                        {pageMessage}
                     </span> :
                 contributorPairs.map((pair) => {
                     return (<ResultCard pair = {pair} />);

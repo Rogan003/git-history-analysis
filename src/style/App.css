@@ -1,6 +1,7 @@
 .App {
   text-align: center;
   padding: 5% 30% 10% 30%;
+  font-color: rgba(240, 248, 255, 0.04);
 }
 
 .linkInputDiv {
@@ -37,11 +38,17 @@
   cursor: pointer;
 }
 
-.errorMsg {
+.errMsg {
   font-size: 130%;
   text-align: center;
   vertical-align: center;
   color: crimson;
+}
+
+.pageMsg {
+  font-size: 130%;
+  text-align: center;
+  vertical-align: center;
 }
 
 .cardText {
