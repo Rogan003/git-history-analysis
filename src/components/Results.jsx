@@ -86,7 +86,13 @@ const Results = (props) => {
                     const contributorOne = fileContributorsKeys[i];
                     const contributorTwo = fileContributorsKeys[j];
 
-                    const contributorsKey = contributorOne + ';' + contributorTwo;
+                    let contributorsKey = contributorOne + ';' + contributorTwo;
+                    const contributorsKeyReverse = contributorTwo + ';' + contributorOne;
+
+                    if(!contributingPairs.hasOwnProperty(contributorsKey) && contributingPairs.hasOwnProperty(contributorsKeyReverse))
+                    {
+                        contributorsKey = contributorsKeyReverse;
+                    }
 
                     if (!contributingPairs.hasOwnProperty(contributorsKey))
                     {
