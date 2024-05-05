@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import ResultCard from "./ResultCard";
-import { Octokit, App } from "octokit";
+import { Octokit } from "octokit";
 
 const Results = (props) => {
     const [contributorPairs, setContributorPairs] = useState([]);
@@ -31,7 +31,8 @@ const Results = (props) => {
         return octokit.request('GET /repos/{owner}/{repo}/{info}', {
             owner: owner,
             repo: repo,
-            info: info
+            info: info,
+            per_page: 1000
         }).then(response => {
             return response;
         }).catch(error => {
@@ -46,7 +47,8 @@ const Results = (props) => {
         return octokit.request('GET /repos/{owner}/{repo}/commits/{ref}', {
             owner: owner,
             repo: repo,
-            ref: commitSha
+            ref: commitSha,
+            per_page: 1000
         }).then(response => {
             // Extract the list of files changed
             const filesChanged = response.data.files.map(file => file.filename);
@@ -123,6 +125,7 @@ const Results = (props) => {
 
     const findTopContributingPairs = async () => {
         const commits = await getRepositoryInformation("commits");
+        console.log(commits.data);
         const contributors = await getRepositoryInformation("contributors");
 
         if(props.linkToRepository === "")
@@ -152,25 +155,22 @@ const Results = (props) => {
             return;
         }
 
-        setErrorMessage("");
-
         // algorithm
         const filesAndContributors= await getFilesAndContributors(commits);
-        console.log(filesAndContributors);
 
         const contributingPairs = await calculateContributingPairs(filesAndContributors);
 
-        console.log(contributingPairs);
 
         const topContributingPairs = Object.values(contributingPairs).sort((pairOne, pairTwo) =>
                 pairTwo["contributionsToTheSameFilesAndRepositories"] - pairOne["contributionsToTheSameFilesAndRepositories"]);
 
-        console.log(topContributingPairs);
+        setErrorMessage("");
         setContributorPairs(topContributingPairs);
     }
 
     useEffect(() => {
         setContributorPairs([]);
+        setErrorMessage("Loading...");
         findTopContributingPairs();
     }, [props.linkToRepository]);
 
