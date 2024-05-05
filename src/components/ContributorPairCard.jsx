@@ -1,8 +1,10 @@
 import React from 'react';
 
-const ResultCard = (props) => {
+const ContributorPairCard = (props) => {
+    // variable that holds the info for the visibility of file contributions (initially hidden, activates on click)
     const [areFilesVisible, setAreFilesVisible] = React.useState(false);
 
+    // displaying the card and its info
     return (
         <div className="contributingPairCard" onClick={() => setAreFilesVisible(!areFilesVisible)}>
             <span className="cardText">First developer: {props.pair.developer1}</span>
@@ -29,4 +31,4 @@ const ResultCard = (props) => {
     );
 };
 
-export default ResultCard;
+export default ContributorPairCard;
