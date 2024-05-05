@@ -8,7 +8,7 @@ const ResultCard = (props) => {
             <span className="cardText">First developer: {props.pair.developer1}</span>
             <span className="cardText">Second developer: {props.pair.developer2}</span>
             <span className="cardText">Total contributions: {props.pair.contributionsToTheSameFilesAndRepositories}</span>
-            <span className="cardText">{areFilesVisible ? "File contributions (min amount from both contributors), click to close:" :
+            <span className="cardClickLabel">{areFilesVisible ? "File contributions (min amount from both contributors), click to close:" :
             "Click to see file contributions"} </span>
             {
                 areFilesVisible &&

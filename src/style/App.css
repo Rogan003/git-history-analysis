@@ -62,3 +62,8 @@
   flex-direction: column;
   padding-top: 5%;
 }
+
+.cardClickLabel {
+  font-style: italic;
+  font-weight: bold;
+}

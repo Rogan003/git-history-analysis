@@ -23,46 +23,82 @@ const Results = (props) => {
         }
     }
 
+    const getNextPageLink = async (linkHeader) => {
+        if (!linkHeader) {
+            return null;
+        }
+
+        // Split the Link header into separate links
+        const links = linkHeader.split(', ');
+
+        // Find the link with rel="next"
+        const nextPageLink = links.find(link => link.includes('rel="next"'));
+
+        if (!nextPageLink) {
+            return null;
+        }
+
+        // Extract the URL from the link
+        const match = nextPageLink.match(/<([^>]+)>/);
+        if (!match) {
+            return null;
+        }
+
+        return match[1];
+    };
+
    const getRepositoryInformation = async (info) => {
         const { owner, repo } = parseGitHubUrl(props.linkToRepository);
 
         if (owner === null) return Promise.resolve(null);
 
-        return octokit.request('GET /repos/{owner}/{repo}/{info}', {
-            owner: owner,
-            repo: repo,
-            info: info,
-            per_page: 1000
-        }).then(response => {
-            return response;
-        }).catch(error => {
-            console.error("Error loading repository:", error);
-            return null;
-        });
+        let nextPage = `GET /repos/${owner}/${repo}/${info}`;
+        let repositoryInformation = [];
+
+        while(nextPage)
+        {
+            await octokit.request(nextPage, {
+                per_page: 100
+            }).then(async response => {
+                repositoryInformation = repositoryInformation.concat(response.data);
+                nextPage = await getNextPageLink(response.headers.link);
+            }).catch(error => {
+                console.error("Error loading repository:", error);
+                return null;
+            });
+        }
+
+        return repositoryInformation;
     }
 
     const getCommitFiles = async (commitSha) => {
         const { owner, repo } = parseGitHubUrl(props.linkToRepository);
 
-        return octokit.request('GET /repos/{owner}/{repo}/commits/{ref}', {
-            owner: owner,
-            repo: repo,
-            ref: commitSha,
-            per_page: 1000
-        }).then(response => {
-            // Extract the list of files changed
-            const filesChanged = response.data.files.map(file => file.filename);
-            return filesChanged;
-        }).catch(error => {
-            console.error("Error fetching commit details:", error);
-            return [];
-        });
+        let nextPage = `GET /repos/${owner}/${repo}/commits/${commitSha}`;
+        let allFiles = [];
+
+        while(nextPage)
+        {
+            await octokit.request(nextPage, {
+                per_page: 100
+            }).then(async response => {
+                // Extract the list of files changed
+                const filesChanged = response.data.files.map(file => file.filename);
+                allFiles = allFiles.concat(filesChanged);
+                nextPage = await getNextPageLink(response.headers.link);
+            }).catch(error => {
+                console.error("Error fetching commit details:", error);
+                return [];
+            });
+        }
+
+        return allFiles;
     };
 
     const getFilesAndContributors = async (commits) => {
         let filesAndContributors = {};
 
-        for (const commit of commits.data) {
+        for (const commit of commits) {
             const commitFiles = await getCommitFiles(commit.sha);
 
             commitFiles.forEach((filename) => {
@@ -140,14 +176,14 @@ const Results = (props) => {
             return;
         }
 
-        if(commits.data.length === 0)
+        if(commits.length === 0)
         {
             setContributorPairs([]);
             setPageMessage("Repository has no commits!");
             return;
         }
 
-        if(contributors.data.length < 2)
+        if(contributors.length < 2)
         {
             setContributorPairs([]);
             setPageMessage("Repository has less than two contributors!");
@@ -156,6 +192,7 @@ const Results = (props) => {
 
         // algorithm
         const filesAndContributors= await getFilesAndContributors(commits);
+        console.log(filesAndContributors);
 
         const contributingPairs = await calculateContributingPairs(filesAndContributors);
 
